@@ -129,7 +129,7 @@ function ReplicationVisual({step}:{step:number}) {
   useFrame((_,delta)=>{
     const damp=1-Math.exp(-delta*3.5);
     const openingAmount=step===0?0:1;
-    if(opening.current) opening.current.rotation.y+=delta*.12;
+    if(opening.current){ opening.current.rotation.y+=delta*.12; opening.current.scale.setScalar(THREE.MathUtils.damp(opening.current.scale.x,step===2?.001:1,3,delta)); }
     if(strandLeft.current){
       strandLeft.current.position.x=THREE.MathUtils.damp(strandLeft.current.position.x,step===0?-.45:-1.12,3.5,delta);
       strandLeft.current.rotation.z=THREE.MathUtils.damp(strandLeft.current.rotation.z,step===0?0:.04,3.5,delta);
@@ -176,20 +176,20 @@ function ReplicationVisual({step}:{step:number}) {
           <Bond from={new THREE.Vector3(-.28,n.y,n.z)} to={new THREE.Vector3(.28,n.y,-n.z)} color="#b6c4d4" radius={.025}/>
         </group>)}
       </group>
-      <group ref={newLeft} position={[-.62,0,.03]}>
+      <group ref={newLeft} position={[-1.12,0,.03]}>
         {nodes.map(n=><group key={"new-left-"+n.i}>
-          <Atom position={[.14,n.y,n.z]} color={baseColors[n.b]} radius={.115}/>
-          <Atom position={[.31,n.y,n.z]} color={atomColors.phosphorus} radius={.085}/>
-          <Bond from={new THREE.Vector3(.14,n.y,n.z)} to={new THREE.Vector3(.31,n.y,n.z)} color="#e5a04a" radius={.022}/>
-          <Html position={[.14,n.y+.13,n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.b]}}>{n.b}</span></Html>
+          <Atom position={[.45,n.y,n.z]} color={baseColors[n.b]} radius={.115}/>
+          <Atom position={[.62,n.y,n.z]} color={atomColors.phosphorus} radius={.085}/>
+          <Bond from={new THREE.Vector3(.45,n.y,n.z)} to={new THREE.Vector3(.62,n.y,n.z)} color="#e5a04a" radius={.022}/>
+          <Html position={[.45,n.y+.13,n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.b]}}>{n.b}</span></Html>
         </group>)}
       </group>
-      <group ref={newRight} position={[.62,0,-.03]}>
+      <group ref={newRight} position={[1.12,0,-.03]}>
         {nodes.map(n=><group key={"new-right-"+n.i}>
-          <Atom position={[-.14,n.y,-n.z]} color={baseColors[n.a]} radius={.115}/>
-          <Atom position={[-.31,n.y,-n.z]} color={atomColors.phosphorus} radius={.085}/>
-          <Bond from={new THREE.Vector3(-.14,n.y,-n.z)} to={new THREE.Vector3(-.31,n.y,-n.z)} color="#e5a04a" radius={.022}/>
-          <Html position={[-.14,n.y+.13,-n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.a]}}>{n.a}</span></Html>
+          <Atom position={[-.45,n.y,-n.z]} color={baseColors[n.a]} radius={.115}/>
+          <Atom position={[-.62,n.y,-n.z]} color={atomColors.phosphorus} radius={.085}/>
+          <Bond from={new THREE.Vector3(-.45,n.y,-n.z)} to={new THREE.Vector3(-.62,n.y,-n.z)} color="#e5a04a" radius={.022}/>
+          <Html position={[-.45,n.y+.13,-n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.a]}}>{n.a}</span></Html>
         </group>)}
       </group>
     </group>
