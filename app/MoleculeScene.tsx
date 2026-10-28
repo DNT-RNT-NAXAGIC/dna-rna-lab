@@ -93,12 +93,40 @@ function SelectedBase({ selectedBase }: { selectedBase: Base }) {
     <Html position={[0,-1.45,0]} center><span className="scene-caption">Հիմքի օղակային սխեմա · ոչ ատոմային ճշգրիտ կառուցվածք</span></Html>
   </group>;
 }
-function SceneContent({ mode, selectedBase, replicationStep }: { mode:string; selectedBase:Base; replicationStep:number }) {
+function PeptideChain({ offset=0, scale=1 }: { offset?:number; scale?:number }) {
+  const points=useMemo(()=>Array.from({length:9},(_,i)=>new THREE.Vector3((i-4)*.34,Math.sin(i*.9)*.42,Math.cos(i*.7)*.22)),[]);
+  const colors=["#df4d50","#397ac5","#27966a","#d6ad24","#8a5ac8","#e5a04a"];
+  return <group position={[offset,0,0]} scale={scale}>
+    <Backbone points={points} color="#9eb0c3"/>
+    {points.map((p,i)=><group key={i}><Atom position={[p.x,p.y,p.z]} color={colors[i%colors.length]} radius={.16}/>{i>0&&<Bond from={points[i-1]} to={p} color="#d4b08b" radius={.045}/>}</group>)}
+    <Html position={[0,-.85,0]} center><span className="scene-caption">Ամինաթթուների շղթա</span></Html>
+  </group>;
+}
+function NucleotideChain() {
+  const pts=useMemo(()=>Array.from({length:7},(_,i)=>new THREE.Vector3((i-3)*.48,Math.sin(i*.7)*.38,0)),[]);
+  const colors=["#df4d50","#397ac5","#27966a","#d6ad24","#8a5ac8","#397ac5","#df4d50"];
+  return <group>{pts.map((p,i)=><group key={i}><Atom position={[p.x,p.y,p.z]} color="#e5a04a" radius={.13}/><Atom position={[p.x,p.y+.28,p.z]} color="#d9e5f3" radius={.16}/><Atom position={[p.x,p.y+.57,p.z]} color={colors[i]} radius={.19}/>{i>0&&<Bond from={pts[i-1]} to={p} color="#d9e5f3" radius={.04}/>}</group>)}<Html position={[0,-.65,0]} center><span className="scene-caption">Նուկլեոտիդների շղթա</span></Html></group>;
+}
+function SlideModel({ mode, selectedBase, replicationStep }: { mode:string; selectedBase:Base; replicationStep:number }) {
   if(mode==="replication") return <ReplicationVisual step={replicationStep}/>;
+  if(mode==="hero") return <group scale={1.12}><DNAHelix/></group>;
+  if(mode==="plan") return <NucleotideChain/>;
+  if(mode==="facts") return <group><group scale={.76}><DNAHelix/></group>{Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return <Atom key={i} position={[Math.cos(a)*1.8,Math.sin(a)*1.55,.15]} color={i%2?"#e5a04a":"#8a5ac8"} radius={.12}/>})}<Html position={[0,-2.7,0]} center><span className="scene-caption">Գենետիկական տեղեկատվությունը բջջի ներսում</span></Html></group>;
+  if(mode==="timeline") return <group><group scale={.82} position={[-.65,0,0]}><DNAHelix/></group><group position={[1.35,.15,.2]}><BaseRing base="A" position={[0,.65,0]} scale={.8}/><BaseRing base="G" position={[0,-.25,0]} scale={.8}/></group></group>;
+  if(mode==="nucleotide") return <SelectedBase selectedBase={selectedBase}/>;
+  if(mode==="dna") return <DNAHelix/>;
+  if(mode==="bases") return <BasePair selectedBase={selectedBase}/>;
   if(mode==="rna") return <RNAWithMotion selectedBase={selectedBase}/>;
-  if(mode==="pair") return <BasePair selectedBase={selectedBase}/>;
-  if(mode==="base") return <SelectedBase selectedBase={selectedBase}/>;
+  if(mode==="rna-types") return <group><group position={[-1.25,.25,0]} scale={.55}><RNAStrand/></group><group position={[1.15,.25,0]} scale={.55}><RNAStrand/></group><group position={[0,-1.05,.2]} scale={.5}><PeptideChain/></group><Html position={[0,-2.45,0]} center><span className="scene-caption">իՌՆԹ · տՌՆԹ · ռՌՆԹ</span></Html></group>;
+  if(mode==="compare") return <group><group position={[-1.15,0,0]} scale={.58}><DNAHelix/></group><group position={[1.1,0,.1]} scale={.65}><RNAStrand/></group><Html position={[-1.1,-2.65,0]} center><span className="scene-caption">ԴՆԹ · երկու շղթա</span></Html><Html position={[1.1,-1.3,0]} center><span className="scene-caption">ՌՆԹ · մեկ շղթա</span></Html></group>;
+  if(mode==="central-dogma") return <group><group position={[-1.35,.35,0]} scale={.48}><DNAHelix/></group><group position={[0,.1,0]} scale={.58}><RNAStrand/></group><group position={[1.35,-.3,0]} scale={.55}><PeptideChain/></group><Html position={[-1.35,-1.95,0]} center><span className="scene-caption">ԴՆԹ</span></Html><Html position={[0,-1.3,0]} center><span className="scene-caption">իՌՆԹ</span></Html></group>;
+  if(mode==="applications") return <group><DNAHelix/><Atom position={[.86,.62,.65]} color="#ff4d6d" radius={.22}/><Atom position={[.98,.82,.7]} color="#ffb84d" radius={.11}/><Html position={[1.1,1.1,.3]} center><span className="scene-caption">Փոփոխված հատված</span></Html></group>;
+  if(mode==="quiz") return <group><BasePair selectedBase={selectedBase}/><group position={[0,1.1,.2]}><Atom position={[-.55,0,0]} color="#df4d50" radius={.16}/><Atom position={[0,0,0]} color="#27966a" radius={.16}/><Atom position={[.55,0,0]} color="#397ac5" radius={.16}/><Bond from={new THREE.Vector3(-.39,0,0)} to={new THREE.Vector3(-.16,0,0)}/><Bond from={new THREE.Vector3(.16,0,0)} to={new THREE.Vector3(.39,0,0)}/></group></group>;
+  if(mode==="sources") return <group><group position={[-.9,0,0]} scale={.62}><DNAHelix/></group><group position={[1,0,0]} scale={.72}><RNAStrand/></group><Html position={[0,-2.45,0]} center><span className="scene-caption">ԴՆԹ և ՌՆԹ · ամփոփում</span></Html></group>;
   return <DNAHelix/>;
+}
+function SceneContent({ mode, selectedBase, replicationStep }: { mode:string; selectedBase:Base; replicationStep:number }) {
+  return <SlideModel mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/>;
 }
 function RNAWithMotion({selectedBase}:{selectedBase:Base}) {
   const group=useRef<THREE.Group>(null);
