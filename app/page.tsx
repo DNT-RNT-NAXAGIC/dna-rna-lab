@@ -119,7 +119,7 @@ export default function Home() {
 
     {toc && <div className="toc-backdrop" onClick={()=>setToc(false)}><aside className="toc-panel" onClick={e=>e.stopPropagation()}><div className="panel-head"><div><span className="eyebrow">ՆԱՎԻԳԱՑԻԱ</span><h2>Բովանդակություն</h2></div><button className="icon-button" onClick={()=>setToc(false)} aria-label="Փակել">×</button></div>{slides.map((s,i)=><button key={s.title} className={"toc-row "+(i===slideIndex?"active":"")} onClick={()=>go(i)}><span>{String(i+1).padStart(2,"0")}</span><b>{s.title}</b><span>↗</span></button>)}<p className="muted tiny">Ստեղնաշար՝ ← → · Space · Home / End · F՝ լիաէկրան</p></aside></div>}
 
-    <section className={"slide slide-"+slide.visual} key={slideIndex}>
+    <section className={"slide slide-"+slide.visual}>
       <div className="slide-copy">
         <div className="eyebrow"><span className="eyebrow-dot"/>{slide.eyebrow}</div>
         <h1>{slide.title}</h1>
@@ -141,7 +141,7 @@ export default function Home() {
       <div className="slide-visual">
         <div className="visual-topline"><span>{slide.visual==="hero"?"MOLECULAR BIOLOGY":slide.visual==="timeline"?"DISCOVERY TIMELINE":slide.visual==="bases"?"BASE EXPLORER":"MOLECULAR VIEW"}</span><span>{String(slideIndex+1).padStart(2,"0")} / 15</span></div>
         <div className={"visual-stage stage-"+slide.visual}>
-          <MoleculeScene mode={slide.visual==="bases"?modelMode:slide.visual==="replication"?"replication":slide.mode||"dna"} selectedBase={base} replicationStep={replicationStep} compact={slide.visual!=="hero"}/>
+          <MoleculeScene mode={slide.visual==="bases"?modelMode:slide.visual==="replication"?"replication":slide.mode||"dna"} selectedBase={base} replicationStep={replicationStep} transitionKey={slideIndex} compact={slide.visual!=="hero"}/>
           {slide.visual==="nucleotide"&&<div className="nucleotide-labels"><span>Ֆոսֆատ</span><span>Շաքար</span><span>Հիմք</span></div>}
           {slide.visual==="plan"&&<div className="floating-caption">01 <span>Գենետիկական տեղեկատվություն</span></div>}
           {slide.visual==="hero"&&<div className="hero-stamp"><span>3D</span><b>Մոլեկուլների<br/>աշխարհը</b></div>}
