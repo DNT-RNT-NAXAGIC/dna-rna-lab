@@ -112,90 +112,86 @@ function RNAVisual() { return <RNAContent/>; }
 function RNAContent() { return <RNAStrand/>; }
 
 function ReplicationVisual({step}:{step:number}) {
-  const opening=useRef<THREE.Group>(null);
-  const daughterLeft=useRef<THREE.Group>(null);
-  const daughterRight=useRef<THREE.Group>(null);
-  const strandLeft=useRef<THREE.Group>(null);
-  const strandRight=useRef<THREE.Group>(null);
-  const rungs=useRef<THREE.Group>(null);
-  const newLeft=useRef<THREE.Group>(null);
-  const newRight=useRef<THREE.Group>(null);
-  const letters:Base[]=["A","G","C","T","T","A","C","G","A","T","G","C","A","G","T","C","A"];
-  const nodes=useMemo(()=>letters.map((a,i)=>{
+  const intact=useRef<THREE.Group>(null);
+  const fork=useRef<THREE.Group>(null);
+  const daughterA=useRef<THREE.Group>(null);
+  const daughterB=useRef<THREE.Group>(null);
+  const oldA=useRef<THREE.Group>(null);
+  const oldB=useRef<THREE.Group>(null);
+  const newA=useRef<THREE.Group>(null);
+  const newB=useRef<THREE.Group>(null);
+  const bases:Base[]=["A","G","C","T","T","A","C","G","A","T","G","C","A","G","T","C","A"];
+  const nodes=useMemo(()=>bases.map((a,i)=>{
     const t=i/16, angle=t*Math.PI*5.4, y=(t-.5)*4.4;
-    const complement:Base=a==="A"?"T":a==="T"?"A":a==="G"?"C":"G";
-    return {i,y,z:Math.sin(angle)*.32,a,b:complement};
+    const p=new THREE.Vector3(Math.cos(angle)*.72,y,Math.sin(angle)*.72);
+    const q=new THREE.Vector3(-Math.cos(angle)*.72,y,-Math.sin(angle)*.72);
+    const b:Base=a==="A"?"T":a==="T"?"A":a==="G"?"C":"G";
+    return {i,p,q,a,b};
   }),[]);
   useFrame((_,delta)=>{
-    const damp=1-Math.exp(-delta*3.5);
-    const openingAmount=step===0?0:1;
-    if(opening.current){ opening.current.rotation.y+=delta*.12; opening.current.scale.setScalar(THREE.MathUtils.damp(opening.current.scale.x,step===2?.001:1,3,delta)); }
-    if(strandLeft.current){
-      strandLeft.current.position.x=THREE.MathUtils.damp(strandLeft.current.position.x,step===0?-.45:-1.12,3.5,delta);
-      strandLeft.current.rotation.z=THREE.MathUtils.damp(strandLeft.current.rotation.z,step===0?0:.04,3.5,delta);
+    const smooth=3.8;
+    const isFork=step===1;
+    if(intact.current){
+      intact.current.scale.setScalar(THREE.MathUtils.damp(intact.current.scale.x,step===0?1:.001,smooth,delta));
     }
-    if(strandRight.current){
-      strandRight.current.position.x=THREE.MathUtils.damp(strandRight.current.position.x,step===0?.45:1.12,3.5,delta);
-      strandRight.current.rotation.z=THREE.MathUtils.damp(strandRight.current.rotation.z,step===0?0:-.04,3.5,delta);
+    if(fork.current){
+      fork.current.scale.setScalar(THREE.MathUtils.damp(fork.current.scale.x,isFork?1:.001,smooth,delta));
+      fork.current.rotation.y=THREE.MathUtils.damp(fork.current.rotation.y,isFork?0:fork.current.rotation.y,smooth,delta);
     }
-    if(rungs.current) rungs.current.scale.x=THREE.MathUtils.damp(rungs.current.scale.x,step===0?1:.001,5,delta);
-    if(newLeft.current) newLeft.current.scale.setScalar(THREE.MathUtils.damp(newLeft.current.scale.x,step===0?.001:1,4,delta));
-    if(newRight.current) newRight.current.scale.setScalar(THREE.MathUtils.damp(newRight.current.scale.x,step===0?.001:1,4,delta));
-    const daughterTarget=step===2?1:.001;
-    if(daughterLeft.current) daughterLeft.current.scale.setScalar(THREE.MathUtils.damp(daughterLeft.current.scale.x,daughterTarget,3,delta));
-    if(daughterRight.current) daughterRight.current.scale.setScalar(THREE.MathUtils.damp(daughterRight.current.scale.x,daughterTarget,3,delta));
+    if(oldA.current){
+      oldA.current.position.x=THREE.MathUtils.damp(oldA.current.position.x,isFork?-1.0:-.58,smooth,delta);
+      oldA.current.rotation.z=THREE.MathUtils.damp(oldA.current.rotation.z,isFork?.10:0,smooth,delta);
+    }
+    if(oldB.current){
+      oldB.current.position.x=THREE.MathUtils.damp(oldB.current.position.x,isFork?1.0:.58,smooth,delta);
+      oldB.current.rotation.z=THREE.MathUtils.damp(oldB.current.rotation.z,isFork?-.10:0,smooth,delta);
+    }
+    const pairScale=isFork?1:.001;
+    if(newA.current) newA.current.scale.setScalar(THREE.MathUtils.damp(newA.current.scale.x,pairScale,smooth,delta));
+    if(newB.current) newB.current.scale.setScalar(THREE.MathUtils.damp(newB.current.scale.x,pairScale,smooth,delta));
+    const daughterScale=step===2?1:.001;
+    if(daughterA.current) daughterA.current.scale.setScalar(THREE.MathUtils.damp(daughterA.current.scale.x,daughterScale,smooth,delta));
+    if(daughterB.current) daughterB.current.scale.setScalar(THREE.MathUtils.damp(daughterB.current.scale.x,daughterScale,smooth,delta));
   });
   return <group>
-    <group ref={opening}>
-      <group ref={strandLeft} position={[-.45,0,0]}>
-        {nodes.map(n=>{
-          const p=new THREE.Vector3(Math.cos(n.i/16*Math.PI*5.4)*.22,n.y,n.z);
-          const bp=new THREE.Vector3(p.x+.14,p.y,p.z);
-          return <group key={"old-left-"+n.i}>
-            <Atom position={[p.x,p.y,p.z]} color={atomColors.phosphorus} radius={.105}/>
-            <Atom position={[bp.x,bp.y,bp.z]} color={baseColors[n.a]} radius={.13}/>
-            {n.i>0&&<Bond from={new THREE.Vector3(Math.cos((n.i-1)/16*Math.PI*5.4)*.22,nodes[n.i-1].y,nodes[n.i-1].z)} to={p} color="#d9e5f3" radius={.045}/>}
-            <Bond from={p} to={bp} color="#9eacbd" radius={.025}/>
-          </group>;
-        })}
-      </group>
-      <group ref={strandRight} position={[.45,0,0]}>
-        {nodes.map(n=>{
-          const p=new THREE.Vector3(-Math.cos(n.i/16*Math.PI*5.4)*.22,n.y,-n.z);
-          const bp=new THREE.Vector3(p.x-.14,p.y,p.z);
-          return <group key={"old-right-"+n.i}>
-            <Atom position={[p.x,p.y,p.z]} color={atomColors.phosphorus} radius={.105}/>
-            <Atom position={[bp.x,bp.y,bp.z]} color={baseColors[n.b]} radius={.13}/>
-            {n.i>0&&<Bond from={new THREE.Vector3(-Math.cos((n.i-1)/16*Math.PI*5.4)*.22,nodes[n.i-1].y,-nodes[n.i-1].z)} to={p} color="#c8d9ee" radius={.045}/>}
-            <Bond from={p} to={bp} color="#9eacbd" radius={.025}/>
-          </group>;
-        })}
-      </group>
-      <group ref={rungs}>
-        {nodes.map(n=><group key={"rung-"+n.i}>
-          <Bond from={new THREE.Vector3(-.28,n.y,n.z)} to={new THREE.Vector3(.28,n.y,-n.z)} color="#b6c4d4" radius={.025}/>
+    <group ref={intact}><DNAHelix/></group>
+    <group ref={fork} scale={.001}>
+      <group ref={oldA} position={[-1,0,0]}>
+        <Backbone points={nodes.map(n=>n.p)} color="#d9e5f3"/>
+        {nodes.map(n=><group key={"template-a-"+n.i}>
+          <Atom position={[n.p.x,n.p.y,n.p.z]} color={atomColors.phosphorus} radius={.095}/>
+          <Atom position={[n.p.x*.66,n.p.y,n.p.z*.66]} color={baseColors[n.a]} radius={.13}/>
+          <Html position={[n.p.x*.66,n.p.y+.16,n.p.z*.66]} center distanceFactor={9} style={{pointerEvents:"none"}}><span style={{fontSize:"10px",fontWeight:800,color:baseColors[n.a]}}>{n.a}</span></Html>
         </group>)}
       </group>
-      <group ref={newLeft} position={[-1.12,0,.03]}>
-        {nodes.map(n=><group key={"new-left-"+n.i}>
-          <Atom position={[.45,n.y,n.z]} color={baseColors[n.b]} radius={.115}/>
-          <Atom position={[.62,n.y,n.z]} color={atomColors.phosphorus} radius={.085}/>
-          <Bond from={new THREE.Vector3(.45,n.y,n.z)} to={new THREE.Vector3(.62,n.y,n.z)} color="#e5a04a" radius={.022}/>
-          <Html position={[.45,n.y+.13,n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.b]}}>{n.b}</span></Html>
+      <group ref={oldB} position={[1,0,0]}>
+        <Backbone points={nodes.map(n=>n.q)} color="#c8d9ee"/>
+        {nodes.map(n=><group key={"template-b-"+n.i}>
+          <Atom position={[n.q.x,n.q.y,n.q.z]} color={atomColors.phosphorus} radius={.095}/>
+          <Atom position={[n.q.x*.66,n.q.y,n.q.z*.66]} color={baseColors[n.b]} radius={.13}/>
+          <Html position={[n.q.x*.66,n.q.y+.16,n.q.z*.66]} center distanceFactor={9} style={{pointerEvents:"none"}}><span style={{fontSize:"10px",fontWeight:800,color:baseColors[n.b]}}>{n.b}</span></Html>
         </group>)}
       </group>
-      <group ref={newRight} position={[1.12,0,-.03]}>
-        {nodes.map(n=><group key={"new-right-"+n.i}>
-          <Atom position={[-.45,n.y,-n.z]} color={baseColors[n.a]} radius={.115}/>
-          <Atom position={[-.62,n.y,-n.z]} color={atomColors.phosphorus} radius={.085}/>
-          <Bond from={new THREE.Vector3(-.45,n.y,-n.z)} to={new THREE.Vector3(-.62,n.y,-n.z)} color="#e5a04a" radius={.022}/>
-          <Html position={[-.45,n.y+.13,-n.z]} center distanceFactor={10} style={{pointerEvents:"none"}}><span style={{fontSize:"9px",fontWeight:800,color:baseColors[n.a]}}>{n.a}</span></Html>
+      <group ref={newA} scale={.001}>
+        <Backbone points={nodes.map(n=>new THREE.Vector3(n.p.x*.43,n.p.y,n.p.z*.43))} color="#e5a04a"/>
+        {nodes.map(n=><group key={"new-a-"+n.i}>
+          <Atom position={[n.p.x*.43,n.p.y,n.p.z*.43]} color={baseColors[n.b]} radius={.105}/>
+          <Bond from={new THREE.Vector3(n.p.x*.66,n.p.y,n.p.z*.66)} to={new THREE.Vector3(n.p.x*.43,n.p.y,n.p.z*.43)} color="#e5a04a" radius={.035}/>
+          <Html position={[n.p.x*.43,n.p.y+.15,n.p.z*.43]} center distanceFactor={9} style={{pointerEvents:"none"}}><span style={{fontSize:"10px",fontWeight:900,color:baseColors[n.b]}}>{n.b}</span></Html>
+        </group>)}
+      </group>
+      <group ref={newB} scale={.001}>
+        <Backbone points={nodes.map(n=>new THREE.Vector3(n.q.x*.43,n.q.y,n.q.z*.43))} color="#e5a04a"/>
+        {nodes.map(n=><group key={"new-b-"+n.i}>
+          <Atom position={[n.q.x*.43,n.q.y,n.q.z*.43]} color={baseColors[n.a]} radius={.105}/>
+          <Bond from={new THREE.Vector3(n.q.x*.66,n.q.y,n.q.z*.66)} to={new THREE.Vector3(n.q.x*.43,n.q.y,n.q.z*.43)} color="#e5a04a" radius={.035}/>
+          <Html position={[n.q.x*.43,n.q.y+.15,n.q.z*.43]} center distanceFactor={9} style={{pointerEvents:"none"}}><span style={{fontSize:"10px",fontWeight:900,color:baseColors[n.a]}}>{n.a}</span></Html>
         </group>)}
       </group>
     </group>
-    <group ref={daughterLeft} position={[-1.12,0,0]} scale={.001}><DNAHelix/></group>
-    <group ref={daughterRight} position={[1.12,0,0]} scale={.001}><DNAHelix/></group>
-    <Html position={[0,-3.05,0]} center><span className="scene-caption">{["Մեկ ԴՆԹ երկպարույր՝ սկզբնական կառուցվածք","Հին շղթաները բաժանվում են, լրացուցիչ հիմքերը միանում են դրանց","Երկու նույնական ԴՆԹ մոլեկուլ"][step]}</span></Html>
+    <group ref={daughterA} position={[-1.05,0,0]} scale={.001}><DNAHelix/></group>
+    <group ref={daughterB} position={[1.05,0,0]} scale={.001}><DNAHelix/></group>
+    <Html position={[0,-3.05,0]} center><span className="scene-caption">{["Մեկ ԴՆԹ երկպարույր՝ սկզբնական կառուցվածք","Հին շղթաները բաժանվում են, նոր լրացուցիչ հիմքերը միանում են դրանց","Երկու նույնական ԴՆԹ մոլեկուլ"][step]}</span></Html>
   </group>;
 }
 
