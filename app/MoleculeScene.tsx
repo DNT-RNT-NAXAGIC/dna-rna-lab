@@ -195,17 +195,21 @@ function ReplicationVisual({step}:{step:number}) {
   </group>;
 }
 
-export default function MoleculeScene({ mode="dna", selectedBase="A", replicationStep=0, compact=false, transitionKey=0 }: { mode?:string; selectedBase?:Base; replicationStep?:number; compact?:boolean; transitionKey?:number }) {
+function AnimatedSceneContent({ mode, selectedBase, replicationStep, transitionKey }: { mode:string; selectedBase:Base; replicationStep:number; transitionKey:number }) {
   const transition=useRef<THREE.Group>(null);
   useEffect(()=>{if(transition.current){transition.current.scale.setScalar(.86);transition.current.rotation.y=-.12;}},[transitionKey,mode]);
   useFrame((_,delta)=>{if(transition.current){transition.current.scale.setScalar(THREE.MathUtils.damp(transition.current.scale.x,1,4,delta));transition.current.rotation.y=THREE.MathUtils.damp(transition.current.rotation.y,0,4,delta);}});
+  return <group ref={transition}><SceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/></group>;
+}
+
+export default function MoleculeScene({ mode="dna", selectedBase="A", replicationStep=0, compact=false, transitionKey=0 }: { mode?:string; selectedBase?:Base; replicationStep?:number; compact?:boolean; transitionKey?:number }) {
   return <div className={compact?"scene scene-compact":"scene"}>
     <Canvas camera={{position:[0,0,7.3],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:true}}>
       <ambientLight intensity={1.15}/>
       <directionalLight position={[4,5,6]} intensity={2.1}/>
       <directionalLight position={[-4,-2,-5]} intensity={.85} color="#c6dcff"/>
       <pointLight position={[0,2,4]} intensity={.5} color="#fff0dc"/>
-      <group ref={transition}><SceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/></group>
+      <AnimatedSceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep} transitionKey={transitionKey}/>
       <OrbitControls enablePan={false} minDistance={3.2} maxDistance={10.5} enableDamping dampingFactor={.07}/>
     </Canvas>
   </div>;
