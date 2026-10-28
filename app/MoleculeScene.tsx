@@ -93,7 +93,8 @@ function SelectedBase({ selectedBase }: { selectedBase: Base }) {
     <Html position={[0,-1.45,0]} center><span className="scene-caption">Հիմքի օղակային սխեմա · ոչ ատոմային ճշգրիտ կառուցվածք</span></Html>
   </group>;
 }
-function SceneContent({ mode, selectedBase }: { mode:string; selectedBase:Base }) {
+function SceneContent({ mode, selectedBase, replicationStep }: { mode:string; selectedBase:Base; replicationStep:number }) {
+  if(mode==="replication") return <ReplicationVisual step={replicationStep}/>;
   if(mode==="rna") return <RNAWithMotion selectedBase={selectedBase}/>;
   if(mode==="pair") return <BasePair selectedBase={selectedBase}/>;
   if(mode==="base") return <SelectedBase selectedBase={selectedBase}/>;
@@ -110,14 +111,41 @@ function RNASeed({selectedBase}:{selectedBase:Base}) {
 function RNAVisual() { return <RNAContent/>; }
 function RNAContent() { return <RNAStrand/>; }
 
-export default function MoleculeScene({ mode="dna", selectedBase="A", compact=false }: { mode?:string; selectedBase?:Base; compact?:boolean }) {
+function ReplicationVisual({step}:{step:number}) {
+  const left=useRef<THREE.Group>(null);
+  const right=useRef<THREE.Group>(null);
+  useFrame((_,delta)=>{
+    const damp=1-Math.exp(-delta*3.2);
+    if(left.current){
+      const targetScale=step===2?.58:step===1?1.08:1;
+      const targetX=step===2?-1.15:step===1?-.35:0;
+      left.current.scale.lerp(new THREE.Vector3(targetScale,targetScale,targetScale),damp);
+      left.current.position.x=THREE.MathUtils.damp(left.current.position.x,targetX,3.2,delta);
+      left.current.rotation.z=THREE.MathUtils.damp(left.current.rotation.z,step===1?.18:0,3.2,delta);
+    }
+    if(right.current){
+      const targetScale=step===2?.58:0.001;
+      const targetX=step===2?1.15:.45;
+      right.current.scale.lerp(new THREE.Vector3(targetScale,targetScale,targetScale),damp);
+      right.current.position.x=THREE.MathUtils.damp(right.current.position.x,targetX,3.2,delta);
+      right.current.rotation.z=THREE.MathUtils.damp(right.current.rotation.z,step===1?-.18:0,3.2,delta);
+    }
+  });
+  return <group>
+    <group ref={left}><DNAHelix/></group>
+    <group ref={right}><DNAHelix/></group>
+    <Html position={[0,-3.05,0]} center><span className="scene-caption">{["Մեկ ԴՆԹ երկպարույր","Նոր շղթաները հավաքվում են հին շղթաների վրա","Երկու նույնական ԴՆԹ մոլեկուլ"][step]}</span></Html>
+  </group>;
+}
+
+export default function MoleculeScene({ mode="dna", selectedBase="A", replicationStep=0, compact=false }: { mode?:string; selectedBase?:Base; replicationStep?:number; compact?:boolean }) {
   return <div className={compact?"scene scene-compact":"scene"}>
     <Canvas camera={{position:[0,0,7.3],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:true}}>
       <ambientLight intensity={1.15}/>
       <directionalLight position={[4,5,6]} intensity={2.1}/>
       <directionalLight position={[-4,-2,-5]} intensity={.85} color="#c6dcff"/>
       <pointLight position={[0,2,4]} intensity={.5} color="#fff0dc"/>
-      <SceneContent mode={mode} selectedBase={selectedBase}/>
+      <SceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/>
       <OrbitControls enablePan={false} minDistance={3.2} maxDistance={10.5} enableDamping dampingFactor={.07}/>
     </Canvas>
   </div>;
