@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 type Base = "A" | "T" | "G" | "C" | "U";
@@ -202,7 +202,7 @@ export default function MoleculeScene({ mode="dna", selectedBase="A", replicatio
       <directionalLight position={[4,5,6]} intensity={2.1}/>
       <directionalLight position={[-4,-2,-5]} intensity={.85} color="#c6dcff"/>
       <pointLight position={[0,2,4]} intensity={.5} color="#fff0dc"/>
-      <SceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/>
+      <group ref={transition}><SceneContent mode={mode} selectedBase={selectedBase} replicationStep={replicationStep}/></group>
       <OrbitControls enablePan={false} minDistance={3.2} maxDistance={10.5} enableDamping dampingFactor={.07}/>
     </Canvas>
   </div>;
