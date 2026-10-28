@@ -195,7 +195,10 @@ function ReplicationVisual({step}:{step:number}) {
   </group>;
 }
 
-export default function MoleculeScene({ mode="dna", selectedBase="A", replicationStep=0, compact=false }: { mode?:string; selectedBase?:Base; replicationStep?:number; compact?:boolean }) {
+export default function MoleculeScene({ mode="dna", selectedBase="A", replicationStep=0, compact=false, transitionKey=0 }: { mode?:string; selectedBase?:Base; replicationStep?:number; compact?:boolean; transitionKey?:number }) {
+  const transition=useRef<THREE.Group>(null);
+  useEffect(()=>{if(transition.current){transition.current.scale.setScalar(.86);transition.current.rotation.y=-.12;}},[transitionKey,mode]);
+  useFrame((_,delta)=>{if(transition.current){transition.current.scale.setScalar(THREE.MathUtils.damp(transition.current.scale.x,1,4,delta));transition.current.rotation.y=THREE.MathUtils.damp(transition.current.rotation.y,0,4,delta);}});
   return <div className={compact?"scene scene-compact":"scene"}>
     <Canvas camera={{position:[0,0,7.3],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:true}}>
       <ambientLight intensity={1.15}/>
