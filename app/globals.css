@@ -31,3 +31,15 @@
 .app-shell :focus-visible{outline-color:var(--blue)}
 @media(max-width:850px){.app-shell .topbar{height:auto;min-height:74px;flex-wrap:wrap;padding:12px 0}.app-shell .top-actions{flex-wrap:wrap;justify-content:flex-end}.app-shell .slide{gap:24px}.app-shell .visual-stage{min-height:300px}}
 @media(prefers-reduced-motion:reduce){.app-shell *, .app-shell *::before,.app-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* Step-by-step DNA replication lab */
+.app-shell .slide-replication .stepper{display:grid;gap:12px;margin-top:16px}
+.app-shell .slide-replication .step-visual{display:grid;grid-template-columns:1fr;justify-content:start;gap:8px;min-height:94px;transition:background .3s ease,border-color .3s ease}
+.app-shell .replication-step-number{font-size:10px!important;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)!important;font-weight:800}
+.app-shell .slide-replication .step-visual strong{font-size:14px;line-height:1.5}
+.app-shell .replication-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.app-shell .replication-progress span{font-size:9px!important;line-height:1.4;padding:6px 7px;border-radius:7px;background:var(--bg);color:var(--muted);border:1px solid var(--line);text-align:center}
+.app-shell .replication-progress span.done{background:color-mix(in srgb,var(--blue) 12%,var(--paper));border-color:var(--blue);color:var(--ink)}
+.app-shell .step-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.app-shell .step-actions button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
